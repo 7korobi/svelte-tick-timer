@@ -8,7 +8,7 @@ import {
 	startOfQuarter,
 	startOfYear
 } from 'date-fns';
-import { tickTempo, tickTempoBy } from './tempo';
+import { tickTempo, tickTempoBy } from './tempo.js';
 
 export const tickSecondly = tickTempo('1秒');
 export const tickMinutely = tickTempo('1分');

@@ -1,5 +1,5 @@
 import { readable } from 'svelte/store';
-import { tempo_zero, to_msec } from './msec';
+import { tempo_zero, to_msec } from './msec.js';
 
 const modulo = (a: number, b: number) => ((+a % (b = +b)) + b) % b;
 
