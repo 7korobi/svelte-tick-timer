@@ -1,5 +1,5 @@
 import { readable } from 'svelte/store';
-import { __BROWSER__ } from 'svelte-petit-utils';
+import { __BROWSER__, timeout } from 'svelte-petit-utils';
 import { to_msec, DAY, HOUR, MINUTE, MONTH, SECOND, WEEK, YEAR } from './msec';
 import { Tempo, to_tempo_bare } from './tempo';
 
@@ -90,19 +90,19 @@ function to_distance(msec: number): DISTANCE {
 }
 
 export function tickDistance(
-	at: number | string | Date | undefined,
+	at: number | string | Date,
 	{ limit, format } = distanceDefaultOption
 ) {
 	const timestamp = new Date(at);
 	const timelimit = to_msec(limit);
-	let timerID = null;
+	let bye: () => void | undefined;
 
-	return readable<Tempo>(null, (set) => {
+	return readable<Tempo>(undefined, (set) => {
 		if (undefined === at) return;
 
 		tick();
 		return () => {
-			clearTimeout(timerID);
+			bye && bye();
 		};
 
 		function tick() {
@@ -111,22 +111,22 @@ export function tickDistance(
 			const [_limit, unit_size, template] = to_distance(since);
 			const tempo = to_tempo_bare(unit_size, 0, since);
 			const { now_idx } = tempo;
-			const timeout = Math.min(tempo.timeout, INTERVAL_MAX);
+			const msec = Math.min(tempo.timeout, INTERVAL_MAX);
 
 			if (timelimit < since) {
-				timerID = null;
+				bye = undefined;
 				tempo.label = format(timestamp);
 				set(tempo);
 				return;
 			}
 			if (since < -timelimit) {
-				timerID = setTimeout(tick, timeout);
+				bye = timeout(tick, msec);
 				tempo.label = format(timestamp);
 				set(tempo);
 				return;
 			}
 			tempo.label = template.replace('%s', String(Math.abs(now_idx)));
-			timerID = setTimeout(tick, timeout);
+			bye = timeout(tick, msec);
 			set(tempo);
 			return;
 		}

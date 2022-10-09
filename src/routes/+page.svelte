@@ -37,6 +37,7 @@
 {#each scales as [tickS, tickL]}
 	<p>
 		<meter min={tickL.last_at} max={tickL.next_at} value={tickS.write_at} />
+		{tickL.label} :
 		<Time at={tickL.last_at} /> から <Time at={tickL.next_at} />
 	</p>
 {/each}

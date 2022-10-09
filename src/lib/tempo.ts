@@ -1,4 +1,5 @@
 import { readable } from 'svelte/store';
+import { timeout } from 'svelte-petit-utils';
 import { tempo_zero, to_msec } from './msec.js';
 
 const modulo = (a: number, b: number) => ((+a % (b = +b)) + b) % b;
@@ -230,7 +231,7 @@ export class Tempo {
 			});
 			if (o.timeout < Infinity) {
 				return new Promise((ok) => {
-					setTimeout(() => {
+					timeout(() => {
 						ok(o);
 					}, o.timeout);
 				});
@@ -289,41 +290,43 @@ export function to_tempo_by(table: number[], zero: number, write_at: number) {
 	return new Tempo(zero, now_idx, write_at, last_at, next_at, table);
 }
 
-export function tickTempo(size_str: string, zero_str: string = '0s') {
+export function tickTempo(size_str: string, zero_str: string = '0s', label = size_str) {
 	const size = to_msec(size_str);
 	const zero = to_msec(zero_str) + tempo_zero;
-	return tickTempoBare(size, zero);
+	return tickTempoBare(size, zero, label);
 }
 
-export function tickTempoBare(size: number, zero: number) {
-	let timerID = null;
+export function tickTempoBare(size: number, zero: number, label?: string) {
+	let bye: () => void | undefined;
 
-	return readable<Tempo>(null, (set) => {
+	return readable<Tempo>(undefined, (set) => {
 		tick();
 		return () => {
-			clearTimeout(timerID);
+			bye && bye();
 		};
 
 		function tick() {
 			const tempo = to_tempo_bare(size, zero, Date.now());
-			timerID = setTimeout(tick, tempo.timeout);
+			tempo.label = label;
+			bye = timeout(tick, tempo.timeout);
 			set(tempo);
 		}
 	});
 }
 
 export function tickTempoBy(
+	label: string,
 	fns: [(now: number) => number, (now: number) => number],
 	zero_str: string = '0s'
 ) {
 	const zero = to_msec(zero_str) + tempo_zero;
 	let now_idx = 1;
-	let timerID = null;
+	let bye: () => void | undefined;
 
-	return readable<Tempo>(null, (set) => {
+	return readable<Tempo>(undefined, (set) => {
 		tick();
 		return () => {
-			clearTimeout(timerID);
+			bye && bye();
 		};
 
 		function tick() {
@@ -334,7 +337,8 @@ export function tickTempoBy(
 				last_at,
 				next_at
 			]);
-			timerID = setTimeout(tick, tempo.timeout);
+			tempo.label = label;
+			bye = timeout(tick, tempo.timeout);
 			set(tempo);
 		}
 	});
