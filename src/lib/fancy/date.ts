@@ -403,7 +403,7 @@ export class FancyDate {
 	algo(o: Partial<TOKENS<ALGO_DIC, IndexerProps>>) {
 		for (let key in o) {
 			const val = o[key];
-			this.dic[key] = new Indexer(val);
+			this.dic[key as keyof FancyDate['dic']] = new Indexer(val);
 		}
 
 		// A B C a b c 日の不断、年の不断を構築
@@ -1450,7 +1450,7 @@ K   = @dic.earthy[2] / 360
 		const drill_down = (base: Tempo, path: MSEC_CALC, at = utc) => {
 			let o: Tempo & {
 				length: number;
-				path: string;
+				path: keyof FancyDate['table']['msec'];
 			};
 			const data = this.table.msec[path];
 			const table: number[] = data?.[base.size] || data;
@@ -1706,8 +1706,8 @@ K   = @dic.earthy[2] / 360
 		return new RegExp(reg.join(''));
 	}
 
-	to_table(utc: number, bk: string, ik: string, has_notes = false) {
-		const indexer: Indexer = this.dic[ik as keyof IDIC];
+	to_table(utc: number, bk: keyof Tempos, ik: keyof FancyDate['dic'], has_notes = false) {
+		const indexer: Indexer = this.dic[ik];
 		let o = this.to_tempos(utc);
 		const arg1 = this.雑節(utc, o);
 		const arg2 = this.節句(utc, o);

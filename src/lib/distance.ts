@@ -1,5 +1,5 @@
 import { readable } from 'svelte/store';
-import { __BROWSER__, timeout } from 'svelte-petit-utils';
+import { __BROWSER__, timeoutOn } from 'svelte-petit-utils';
 import { to_msec, DAY, HOUR, MINUTE, MONTH, SECOND, WEEK, YEAR } from './msec';
 import { Tempo, to_tempo_bare } from './tempo';
 
@@ -120,13 +120,13 @@ export function tickDistance(
 				return;
 			}
 			if (since < -timelimit) {
-				bye = timeout(tick, msec);
+				bye = timeoutOn(tick, msec);
 				tempo.label = format(timestamp);
 				set(tempo);
 				return;
 			}
 			tempo.label = template.replace('%s', String(Math.abs(now_idx)));
-			bye = timeout(tick, msec);
+			bye = timeoutOn(tick, msec);
 			set(tempo);
 			return;
 		}

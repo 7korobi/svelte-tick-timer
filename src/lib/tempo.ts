@@ -1,5 +1,5 @@
 import { readable } from 'svelte/store';
-import { timeout } from 'svelte-petit-utils';
+import { timeoutOn } from 'svelte-petit-utils';
 import { tempo_zero, to_msec } from './msec.js';
 
 const modulo = (a: number, b: number) => ((+a % (b = +b)) + b) % b;
@@ -231,7 +231,7 @@ export class Tempo {
 			});
 			if (o.timeout < Infinity) {
 				return new Promise((ok) => {
-					timeout(() => {
+					timeoutOn(() => {
 						ok(o);
 					}, o.timeout);
 				});
@@ -308,7 +308,7 @@ export function tickTempoBare(size: number, zero: number, label?: string) {
 		function tick() {
 			const tempo = to_tempo_bare(size, zero, Date.now());
 			tempo.label = label;
-			bye = timeout(tick, tempo.timeout);
+			bye = timeoutOn(tick, tempo.timeout);
 			set(tempo);
 		}
 	});
@@ -338,7 +338,7 @@ export function tickTempoBy(
 				next_at
 			]);
 			tempo.label = label;
-			bye = timeout(tick, tempo.timeout);
+			bye = timeoutOn(tick, tempo.timeout);
 			set(tempo);
 		}
 	});
