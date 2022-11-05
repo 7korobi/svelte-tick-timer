@@ -1,7 +1,7 @@
 import { readable } from 'svelte/store';
 import { __BROWSER__, timeoutOn } from 'svelte-petit-utils';
-import { to_msec, DAY, HOUR, MINUTE, MONTH, SECOND, WEEK, YEAR } from './msec';
-import { Tempo, to_tempo_bare } from './tempo';
+import { to_msec, DAY, HOUR, MINUTE, MONTH, SECOND, WEEK, YEAR } from './msec.js';
+import { Tempo, to_tempo_bare } from './tempo.js';
 
 type LIMIT = number;
 type UNITSIZE = number;
@@ -95,7 +95,7 @@ export function tickDistance(
 ) {
 	const timestamp = new Date(at);
 	const timelimit = to_msec(limit);
-	let bye: () => void | undefined;
+	let bye: undefined | (() => void);
 
 	return readable<Tempo>(undefined, (set) => {
 		if (undefined === at) return;
