@@ -12,7 +12,7 @@ specifiers:
   prettier: ^2.7.1
   prettier-plugin-svelte: ^2.8.0
   svelte: ^3.52.0
-  svelte-browser: ^0.4.4
+  svelte-browser: ^0.4.6
   svelte-check: ^2.9.2
   svelte-petit-utils: ^0.3.5
   svelte-preprocess: ^4.10.7
@@ -23,7 +23,7 @@ specifiers:
 dependencies:
   date-fns: 2.29.3
   svelte: 3.52.0
-  svelte-browser: 0.4.4
+  svelte-browser: 0.4.6
   svelte-petit-utils: 0.3.5
   tslib: 2.4.1
 
@@ -1758,8 +1758,8 @@ packages:
     engines: {node: '>= 0.4'}
     dev: true
 
-  /svelte-browser/0.4.4:
-    resolution: {integrity: sha512-h0gAjicgZ1GgSsoI85P+iyK1vckoE+VzXOzd1R0t4W2cU+xzEzaOSuE9XicWPvzRtESd09RaP9+DS69HDCQ1qA==}
+  /svelte-browser/0.4.6:
+    resolution: {integrity: sha512-KjyjJipu2kCQQmTcuxRZm4QQsZPL6DMQHnvxUSjxER59Q7pA0aec2xilyO8a+FkKqADiH4PpjFOnm88SO8egog==}
     dependencies:
       svelte-petit-utils: 0.3.5
       tslib: 2.4.1
