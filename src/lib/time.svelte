@@ -1,19 +1,29 @@
 <script lang="ts">
-	import fns_format from 'date-fns/format/index.js';
-	import ja from 'date-fns/locale/ja/index.js';
-	import { tickDistance } from './distance';
+	import { Calendar, type SpanOptions } from 'fancy-date';
+	import { TickDistance } from './distance.svelte.js';
 
-	export let at: number | Date = new Date();
-	export let limit = '10年';
-	export let format = 'yy-MM-dd E HH:mm';
+	const { LocalGregorian } = Calendar;
 
-	$: timer = tickDistance(at, {
-		limit,
-		format: (at: Date) => fns_format(at, format, { locale: ja })
+	let {
+		at = Date.now(),
+		precise,
+		format = 'yyyy-MM-dd(E) HH:mm'
+	}: {
+		at?: number | Date;
+		precise?: SpanOptions['precise'];
+		format?: string;
+	} = $props();
+
+	let timer = $state<TickDistance>();
+	$effect(() => {
+		const instance = new TickDistance(at, { precise });
+		timer = instance;
+		return () => instance.destroy();
 	});
-	$: iso = new Date(at).toISOString();
+	const iso = $derived(new Date(at).toISOString());
+	const title = $derived(LocalGregorian.format(Number(at), format));
 </script>
 
-<time dateTime={iso}>
-	{@html $timer.label}
+<time dateTime={iso} title={title}>
+	{timer?.current.label}
 </time>

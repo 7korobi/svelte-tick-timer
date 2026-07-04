@@ -9,20 +9,20 @@
 		tickMonthly,
 		tickQuarterly,
 		tickYearly,
-		tickDecadely,
-		to_msec
+		tickDecadely
 	} from '$lib';
+	import { to_msec } from 'fancy-date';
 
-	$: scales = [
-		[$tickSecondly, $tickMinutely],
-		[$tickMinutely, $tickHourly],
-		[$tickHourly, $tickDaily],
-		[$tickDaily, $tickWeekly],
-		[$tickWeekly, $tickMonthly],
-		[$tickMonthly, $tickQuarterly],
-		[$tickQuarterly, $tickYearly],
-		[$tickYearly, $tickDecadely]
-	];
+	const scales = $derived([
+		[tickSecondly.current, tickMinutely.current],
+		[tickMinutely.current, tickHourly.current],
+		[tickHourly.current, tickDaily.current],
+		[tickDaily.current, tickWeekly.current],
+		[tickWeekly.current, tickMonthly.current],
+		[tickMonthly.current, tickQuarterly.current],
+		[tickQuarterly.current, tickYearly.current],
+		[tickYearly.current, tickDecadely.current]
+	]);
 
 	console.log(to_msec('1d2h3m4s'));
 	console.log(to_msec('3h10m'));
@@ -36,7 +36,7 @@
 
 {#each scales as [tickS, tickL]}
 	<p>
-		<meter min={tickL.last_at} max={tickL.next_at} value={tickS.write_at} />
+		<meter min={tickL.last_at} max={tickL.next_at} value={tickS.write_at}></meter>
 		{tickL.label} :
 		<Time at={tickL.last_at} /> から <Time at={tickL.next_at} />
 	</p>
