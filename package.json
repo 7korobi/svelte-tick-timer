@@ -32,7 +32,7 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.61.1",
-		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/kit": "^2.69.1",
 		"@sveltejs/package": "^2.5.8",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
@@ -42,7 +42,8 @@
 		"svelte": "^5.56.4",
 		"svelte-check": "^4.7.1",
 		"typescript": "^6.0.3",
-		"vite": "^7.3.6"
+		"vite": "^7.3.6",
+		"wrangler": "^4.107.0"
 	},
 	"dependencies": {
 		"fancy-date": "^0.5.0",
