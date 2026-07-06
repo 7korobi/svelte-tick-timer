@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { Calendar, type SpanOptions } from 'fancy-date';
+	// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
+	// バンドラが named export として静的検出できず undefined になるため、
+	// namespace import で実行時の実体を丸ごと受け取る(tick.svelte.ts と同じ理由)。
+	import * as fancyDate from 'fancy-date';
+	import type { SpanOptions } from 'fancy-date';
 	import { TickDistance } from './distance.svelte.js';
 
+	const { Calendar } = fancyDate;
 	const { LocalGregorian } = Calendar;
 
 	let {
@@ -24,6 +29,6 @@
 	const title = $derived(LocalGregorian.format(Number(at), format));
 </script>
 
-<time dateTime={iso} title={title}>
+<time dateTime={iso} {title}>
 	{timer?.current.label}
 </time>

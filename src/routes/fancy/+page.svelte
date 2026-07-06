@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { FancyDate } from 'fancy-date';
-	import { Calendar, Tempo, hasLunarEvents } from 'fancy-date';
+	// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
+	// バンドラが named export として静的検出できず undefined になるため、
+	// namespace import で実行時の実体を丸ごと受け取る(routes/+page.svelte の
+	// to_msec と同じ理由)。
+	import * as fancyDate from 'fancy-date';
+	const { Calendar, Tempo, hasLunarEvents } = fancyDate;
 
 	const calendars: [string, FancyDate, string][] = [
 		[
@@ -33,46 +38,26 @@
 			Calendar.フランス革命暦,
 			'Gyyy年Modd日 HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
 		],
-		[
-			'ユリウス暦',
-			Calendar.Julian,
-			'Gyyyy/Mo/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
+		['ユリウス暦', Calendar.Julian, 'Gyyyy/Mo/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
 		[
 			'ロムルス暦',
 			Calendar.Romulus,
 			'Gyyyy/Mo/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
 		],
-		[
-			'アマンタ',
-			Calendar.アマンタ,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
+		['アマンタ', Calendar.アマンタ, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
 		[
 			'プールニマンタ',
 			Calendar.プールニマンタ,
 			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
 		],
-		[
-			'Maya',
-			Calendar.Maya,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'Beat',
-			Calendar.Beat,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
+		['Maya', Calendar.Maya, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
+		['Beat', Calendar.Beat, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
 		[
 			'エジプト民用暦',
 			Calendar.エジプト民用暦,
 			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
 		],
-		[
-			'コプト暦',
-			Calendar.コプト暦,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
+		['コプト暦', Calendar.コプト暦, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
 		[
 			'太陽太陰暦（木星、カリスト）',
 			Calendar.Jupiter,
@@ -101,6 +86,20 @@
 	const show_at = $derived(current_at + since);
 	const target = $derived(calendars[selected][1]);
 	const minutes = $derived(calendars.map(([, c]) => c.to_tempos(show_at).m));
+	// 月の出/月の入や日の出/日の入は、その暦日の中に該当イベントが
+	// 一度も起きない日には NaN になる(実測: 月の出のない日がある)。
+	// NaN を format() に渡すと lunisolar() の朔探索が発散し
+	// 「failed to resolve lunisolar month」で例外を投げる。results は
+	// 16暦をまとめて1つの $derived.by で計算しているため、1暦の1イベント
+	// が NaN になっただけで例外が全体に伝播し、テーブル全体が(次に全暦とも
+	// 例外を出さない show_at に辿り着くまで)古い表示のまま固まってしまう
+	// (「年送りボタンを押しても反映されない/数回分まとめて動く」の実体)。
+	// 該当イベントがない場合は空欄にフォールバックし、他の暦・他の行を
+	// 巻き込まないようにする。
+	function format_event(c: FancyDate, utc: number, fmt: string): string[] {
+		if (!Number.isFinite(utc)) return fmt.split(/\s/).map(() => '');
+		return c.format(utc, fmt).split(/\s/);
+	}
 	const results = $derived.by(() =>
 		calendars.map((data) => {
 			const [label, c, date_f] = data;
@@ -112,14 +111,14 @@
 				label,
 				c.format(show_at, date_f).split(/\s/),
 				[
-					c.format(solor.日の出, time_f).split(/\s/),
-					c.format(solor.南中時刻, time_f).split(/\s/),
-					c.format(solor.日の入, time_f).split(/\s/),
+					format_event(c, solor.日の出, time_f),
+					format_event(c, solor.南中時刻, time_f),
+					format_event(c, solor.日の入, time_f)
 				],
 				moon && [
-					c.format(moon.月の出, time_f).split(/\s/),
-					c.format(moon.南中時刻, time_f).split(/\s/),
-					c.format(moon.月の入, time_f).split(/\s/)
+					format_event(c, moon.月の出, time_f),
+					format_event(c, moon.南中時刻, time_f),
+					format_event(c, moon.月の入, time_f)
 				],
 				c.span(show_at, current_at, { precise: 'm' }),
 				data
@@ -170,11 +169,13 @@
 <div class="controls">
 	<button onclick={() => reset()}>reset</button>
 	<span class="form">
-		<button onclick={() => back('1年')}>−</button><span>年</span><button onclick={() => succ('1年')}>＋</button>
+		<button onclick={() => back('1年')}>−</button><span>年</span><button onclick={() => succ('1年')}
+			>＋</button
+		>
 	</span>
 	<span class="form">
-		<button onclick={() => back('1ヶ月')}>−</button><span>月</span><button onclick={() => succ('1ヶ月')}
-			>＋</button
+		<button onclick={() => back('1ヶ月')}>−</button><span>月</span><button
+			onclick={() => succ('1ヶ月')}>＋</button
 		>
 	</span>
 	<span class="form">
@@ -188,8 +189,8 @@
 		>
 	</span>
 	<span class="form">
-		<button onclick={() => back('1時間')}>−</button><span>時</span><button onclick={() => succ('1時間')}
-			>＋</button
+		<button onclick={() => back('1時間')}>−</button><span>時</span><button
+			onclick={() => succ('1時間')}>＋</button
 		>
 	</span>
 	<span class="form">
@@ -211,7 +212,7 @@
 </div>
 
 <table>
-  <thead>
+	<thead>
 		{#if mode === 1}
 			<tr>
 				<th></th>
@@ -248,38 +249,38 @@
 					<input type="radio" name="target" bind:group={selected} value={index} />
 				</td>
 				<td class="l">{label}</td>
-					{#if mode === 1}
-						<td class="l"><span>{span}</span></td>
-					{:else if mode === 2}
-						<td class="l">
-							<span>{yMd}</span>
-						</td>
-						<td class="c">
-							<ruby data-ruby={Er}>{Eo}<rt>{Er}</rt></ruby>
-						</td>
-						<td class="c">
-							<ruby data-ruby={Hrmr}>{Hm}<rt>{Hrmr}</rt></ruby>
-						</td>
-						<td class="c">
-							<ruby data-ruby={ar}>{ao}<rt>{ar}</rt></ruby>年
-						</td>
-						<td class="c">
-							<ruby data-ruby={Ar}>{Ao}<rt>{Ar}</rt></ruby>日
-						</td>
-					{:else if mode === 3}
-						<td class="c"><ruby data-ruby={Zr}>{Zo}<rt>{Zr}</rt></ruby></td>
-						<td class="c"><ruby data-ruby={Nr}>{No}<rt>{Nr}</rt></ruby></td>
-						<td class="l"><ruby>{日[0][0]}<rt>{日[0][1]}</rt></ruby></td>
-						<td class="l"><ruby>{日[1][0]}<rt>{日[1][1]}</rt></ruby></td>
-						<td class="l"><ruby>{日[2][0]}<rt>{日[2][1]}</rt></ruby></td>
-						{#if 月}
-							<td class="l"><ruby>{月[0][0]}<rt>{月[0][1]}</rt></ruby></td>
-							<td class="l"><ruby>{月[1][0]}<rt>{月[1][1]}</rt></ruby></td>
-							<td class="l"><ruby>{月[2][0]}<rt>{月[2][1]}</rt></ruby></td>
-						{:else}
-							<td class="l" colspan="3"></td>
-						{/if}
+				{#if mode === 1}
+					<td class="l"><span>{span}</span></td>
+				{:else if mode === 2}
+					<td class="l">
+						<span>{yMd}</span>
+					</td>
+					<td class="c">
+						<ruby data-ruby={Er}>{Eo}<rt>{Er}</rt></ruby>
+					</td>
+					<td class="c">
+						<ruby data-ruby={Hrmr}>{Hm}<rt>{Hrmr}</rt></ruby>
+					</td>
+					<td class="c">
+						<ruby data-ruby={ar}>{ao}<rt>{ar}</rt></ruby>年
+					</td>
+					<td class="c">
+						<ruby data-ruby={Ar}>{Ao}<rt>{Ar}</rt></ruby>日
+					</td>
+				{:else if mode === 3}
+					<td class="c"><ruby data-ruby={Zr}>{Zo}<rt>{Zr}</rt></ruby></td>
+					<td class="c"><ruby data-ruby={Nr}>{No}<rt>{Nr}</rt></ruby></td>
+					<td class="l"><ruby>{日[0][0]}<rt>{日[0][1]}</rt></ruby></td>
+					<td class="l"><ruby>{日[1][0]}<rt>{日[1][1]}</rt></ruby></td>
+					<td class="l"><ruby>{日[2][0]}<rt>{日[2][1]}</rt></ruby></td>
+					{#if 月}
+						<td class="l"><ruby>{月[0][0]}<rt>{月[0][1]}</rt></ruby></td>
+						<td class="l"><ruby>{月[1][0]}<rt>{月[1][1]}</rt></ruby></td>
+						<td class="l"><ruby>{月[2][0]}<rt>{月[2][1]}</rt></ruby></td>
+					{:else}
+						<td class="l" colspan="3"></td>
 					{/if}
+				{/if}
 			</tr>
 		{/each}
 	</tbody>

@@ -1,6 +1,11 @@
-import { Calendar, type Span, type SpanOptions } from 'fancy-date';
+// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
+// バンドラが named export として静的検出できず undefined になるため、
+// namespace import で実行時の実体を丸ごと受け取る(tick.svelte.ts と同じ理由)。
+import * as fancyDate from 'fancy-date';
+import type { Span, SpanOptions } from 'fancy-date';
 import { INTERVAL_MAX } from './tick.svelte.js';
 
+const { Calendar } = fancyDate;
 const { LocalGregorian } = Calendar;
 
 /**
@@ -47,4 +52,3 @@ export class TickDistance {
 export function tickDistance(at: number | Date, options?: SpanOptions): TickDistance {
 	return new TickDistance(at, options);
 }
-

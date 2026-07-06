@@ -1,5 +1,11 @@
-import { Calendar, to_tempo_bare, type Tempo } from 'fancy-date';
+// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
+// バンドラが named export として静的検出できず undefined になるため、
+// namespace import で実行時の実体を丸ごと受け取る(routes/+page.svelte の
+// to_msec と同じ理由)。
+import * as fancyDate from 'fancy-date';
+import type { Tempo } from 'fancy-date';
 
+const { Calendar, to_tempo_bare } = fancyDate;
 const { LocalGregorian } = Calendar;
 
 // setTimeout の上限(31bit)。timeout がこれを超える場合はこの値でクランプする。
@@ -58,11 +64,15 @@ function tickFixed(size: number, zero: number, label: string): TickTempo {
 export const tickSecondly = tickFixed(LocalGregorian.calc.msec.second, 0, '1秒');
 export const tickMinutely = tickFixed(LocalGregorian.calc.msec.minute, 0, '1分');
 export const tickHourly = tickFixed(LocalGregorian.calc.msec.hour, 0, '1時間');
-export const tickDaily = tickFixed(LocalGregorian.calc.msec.day, LocalGregorian.calc.zero.day, '1日');
+export const tickDaily = tickFixed(
+	LocalGregorian.calc.msec.day,
+	LocalGregorian.calc.zero.day,
+	'1日'
+);
 export const tickWeekly = tickFixed(
 	LocalGregorian.calc.msec.week,
 	LocalGregorian.calc.zero.week,
-	'1週',
+	'1週'
 );
 
 /**
@@ -73,7 +83,7 @@ export const tickWeekly = tickFixed(
  */
 function tickTempoByCalendar(
 	label: string,
-	range: (now: number) => { last_at: number; next_at: number },
+	range: (now: number) => { last_at: number; next_at: number }
 ): TickTempo {
 	return new TickTempo((now) => {
 		const { last_at, next_at } = range(now);
@@ -84,7 +94,10 @@ function tickTempoByCalendar(
 }
 
 export const tickMonthly = tickTempoByCalendar('1ヶ月間', (now) => LocalGregorian.to_tempos(now).M);
-export const tickQuarterly = tickTempoByCalendar('四半期間', (now) => LocalGregorian.to_tempos(now).Q);
+export const tickQuarterly = tickTempoByCalendar(
+	'四半期間',
+	(now) => LocalGregorian.to_tempos(now).Q
+);
 export const tickYearly = tickTempoByCalendar('1年間', (now) => LocalGregorian.to_tempos(now).y);
 export const tickDecadely = tickTempoByCalendar('10年間', (now) => {
 	const { y } = LocalGregorian.to_tempos(now);

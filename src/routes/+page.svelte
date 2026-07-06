@@ -11,7 +11,14 @@
 		tickYearly,
 		tickDecadely
 	} from '$lib';
-	import { to_msec } from 'fancy-date';
+	// tslib の __exportStar (fancy-date の src/index.ts が export * を使っているため
+	// 生成される) は関数呼び出しで再エクスポートするため、Cloudflare Workers の
+	// バンドラ(静的な named export 解析に依存)が to_msec を検出できず undefined
+	// になる(実測: Node/Vite dev では動くが、Workers 上のみ
+	// "Cannot read properties of undefined (reading 'to_msec')" で落ちた)。
+	// namespace import なら実行時の実体を丸ごと受け取るため回避できる。
+	import * as fancyDate from 'fancy-date';
+	const { to_msec } = fancyDate;
 
 	const scales = $derived([
 		[tickSecondly.current, tickMinutely.current],
