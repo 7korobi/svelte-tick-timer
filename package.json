@@ -46,7 +46,7 @@
 		"wrangler": "^4.107.0"
 	},
 	"dependencies": {
-		"fancy-date": "^0.5.1",
+		"fancy-date": "file:../fancy-date",
 		"tslib": "^2.8.1"
 	},
 	"exports": {

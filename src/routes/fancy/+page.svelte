@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FancyDate } from 'fancy-date';
+	import type { FancyDate, FormatPart } from 'fancy-date';
 	// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
 	// バンドラが named export として静的検出できず undefined になるため、
 	// namespace import で実行時の実体を丸ごと受け取る(routes/+page.svelte の
@@ -7,68 +7,44 @@
 	import * as fancyDate from 'fancy-date';
 	const { Calendar, Tempo, hasLunarEvents } = fancyDate;
 
-	const calendars: [string, FancyDate, string][] = [
-		[
-			'グレゴリオ暦(UTC)',
-			Calendar.UTC,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'現地グレゴリオ暦',
-			Calendar.LocalGregorian,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'グレゴリオ暦（天文高精度）',
-			Calendar.GregorianAstronomical,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'定気法 太陽太陰暦（地球、月）',
-			Calendar.定気法,
-			'Gyy年Modd日 Homo Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'平気法 太陽太陰暦（地球、月）',
-			Calendar.平気法,
-			'Gyy年Modd日 Homo Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'フランス革命暦',
-			Calendar.フランス革命暦,
-			'Gyyy年Modd日 HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		['ユリウス暦', Calendar.Julian, 'Gyyyy/Mo/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
-		[
-			'ロムルス暦',
-			Calendar.Romulus,
-			'Gyyyy/Mo/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		['アマンタ', Calendar.アマンタ, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
-		[
-			'プールニマンタ',
-			Calendar.プールニマンタ,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		['Maya', Calendar.Maya, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
-		['Beat', Calendar.Beat, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
-		[
-			'エジプト民用暦',
-			Calendar.エジプト民用暦,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		['コプト暦', Calendar.コプト暦, 'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'],
-		[
-			'太陽太陰暦（木星、カリスト）',
-			Calendar.Jupiter,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		],
-		[
-			'太陽暦（火星）',
-			Calendar.MarsGregorian,
-			'Gyyyy/MM/dd HH:mm Hrmr ao ar Ao Ar Eo Er Fo Fr J No Nr Zo Zr'
-		]
+	const calendars: [string, FancyDate, string, string][] = [
+		['グレゴリオ暦(UTC)', Calendar.UTC, 'Gyyyy/MM/dd', 'HH:mm'],
+		['現地グレゴリオ暦', Calendar.LocalGregorian, 'Gyyyy/MM/dd', 'HH:mm'],
+		['グレゴリオ暦（天文高精度）', Calendar.GregorianAstronomical, 'Gyyyy/MM/dd', 'HH:mm'],
+		['定気法 太陽太陰暦（地球、月）', Calendar.定気法, 'Gyy年Modd日', 'Homo'],
+		['平気法 太陽太陰暦（地球、月）', Calendar.平気法, 'Gyy年Modd日', 'Homo'],
+		['フランス革命暦', Calendar.フランス革命暦, 'Gyyy年Modd日', 'HH:mm'],
+		['ユリウス暦', Calendar.Julian, 'Gyyyy/Mo/dd', 'HH:mm'],
+		['ロムルス暦', Calendar.Romulus, 'Gyyyy/Mo/dd', 'HH:mm'],
+		['アマンタ', Calendar.アマンタ, 'Gyyyy/MM/dd', 'HH:mm'],
+		['プールニマンタ', Calendar.プールニマンタ, 'Gyyyy/MM/dd', 'HH:mm'],
+		['Maya', Calendar.Maya, 'Gyyyy/MM/dd', 'HH:mm'],
+		['Beat', Calendar.Beat, 'Gyyyy/MM/dd', 'HH:mm'],
+		['エジプト民用暦', Calendar.エジプト民用暦, 'Gyyyy/MM/dd', 'HH:mm'],
+		['コプト暦', Calendar.コプト暦, 'Gyyyy/MM/dd', 'HH:mm'],
+		['太陽太陰暦（木星、カリスト）', Calendar.Jupiter, 'Gyyyy/MM/dd', 'HH:mm'],
+		['太陽暦（火星）', Calendar.MarsGregorian, 'Gyyyy/MM/dd', 'HH:mm']
 	];
+
+	type RichText = { text: string; ruby: string };
+
+	function parts_text(parts: FormatPart[]): string {
+		return parts.map((part) => part.text).join('');
+	}
+
+	function parts_ruby(parts: FormatPart[]): string {
+		return parts.map((part) => part.ruby ?? '').join('');
+	}
+
+	function rich(c: FancyDate, utc: number, fmt: string): RichText {
+		if (!Number.isFinite(utc)) return { text: '', ruby: '' };
+		const parts = c.format_parts(utc, fmt);
+		return { text: parts_text(parts), ruby: parts_ruby(parts) };
+	}
+
+	function plain(c: FancyDate, utc: number, fmt: string): string {
+		return rich(c, utc, fmt).text;
+	}
 
 	// C: この暦を使ったどの表現を見るかのモード。
 	// 1: リアクティブな「今」との差分(fancy-date の span() は from 省略時
@@ -96,33 +72,38 @@
 	// (「年送りボタンを押しても反映されない/数回分まとめて動く」の実体)。
 	// 該当イベントがない場合は空欄にフォールバックし、他の暦・他の行を
 	// 巻き込まないようにする。
-	function format_event(c: FancyDate, utc: number, fmt: string): string[] {
-		if (!Number.isFinite(utc)) return fmt.split(/\s/).map(() => '');
-		return c.format(utc, fmt).split(/\s/);
+	function format_event(c: FancyDate, utc: number, fmt: string): RichText {
+		return rich(c, utc, fmt);
 	}
 	const results = $derived.by(() =>
 		calendars.map((data) => {
-			const [label, c, date_f] = data;
-			const [, time_fo, time_fr] = date_f.split(/\s/);
-			const time_f = `${time_fo} ${time_fr}`;
+			const [label, c, date_f, time_f] = data;
 			const solor = c.solor(show_at);
 			const moon = hasLunarEvents(c.dic.moony) ? c.lunar(show_at) : undefined;
-			return [
+			return {
 				label,
-				c.format(show_at, date_f).split(/\s/),
-				[
+				date: plain(c, show_at, date_f),
+				weekday: rich(c, show_at, 'E'),
+				time: rich(c, show_at, time_f),
+				yearCycle: rich(c, show_at, 'yCo'),
+				dayCycle: rich(c, show_at, 'dCo'),
+				season: rich(c, show_at, 'Zo'),
+				phase: rich(c, show_at, 'No'),
+				sun: [
 					format_event(c, solor.日の出, time_f),
 					format_event(c, solor.南中時刻, time_f),
 					format_event(c, solor.日の入, time_f)
 				],
-				moon && [
-					format_event(c, moon.月の出, time_f),
-					format_event(c, moon.南中時刻, time_f),
-					format_event(c, moon.月の入, time_f)
-				],
-				c.span(show_at, current_at, { precise: 'm' }),
+				moon:
+					moon &&
+					[
+						format_event(c, moon.月の出, time_f),
+						format_event(c, moon.南中時刻, time_f),
+						format_event(c, moon.月の入, time_f)
+					],
+				span: c.span(show_at, current_at, { precise: 'm' }),
 				data
-			] as const;
+			} as const;
 		})
 	);
 
@@ -243,40 +224,40 @@
 		{/if}
 	</thead>
 	<tbody>
-		{#each results as [label, [yMd, Hm, Hrmr, ao, ar, Ao, Ar, Eo, Er, Fo, Fr, J, No, Nr, Zo, Zr], 日, 月, span], index}
+		{#each results as result, index}
 			<tr>
 				<td class="c">
 					<input type="radio" name="target" bind:group={selected} value={index} />
 				</td>
-				<td class="l">{label}</td>
+				<td class="l">{result.label}</td>
 				{#if mode === 1}
-					<td class="l"><span>{span}</span></td>
+					<td class="l"><span>{result.span}</span></td>
 				{:else if mode === 2}
 					<td class="l">
-						<span>{yMd}</span>
+						<span>{result.date}</span>
 					</td>
 					<td class="c">
-						<ruby data-ruby={Er}>{Eo}<rt>{Er}</rt></ruby>
+						<ruby data-ruby={result.weekday.ruby}>{result.weekday.text}<rt>{result.weekday.ruby}</rt></ruby>
 					</td>
 					<td class="c">
-						<ruby data-ruby={Hrmr}>{Hm}<rt>{Hrmr}</rt></ruby>
+						<ruby data-ruby={result.time.ruby}>{result.time.text}<rt>{result.time.ruby}</rt></ruby>
 					</td>
 					<td class="c">
-						<ruby data-ruby={ar}>{ao}<rt>{ar}</rt></ruby>年
+						<ruby data-ruby={result.yearCycle.ruby}>{result.yearCycle.text}<rt>{result.yearCycle.ruby}</rt></ruby>年
 					</td>
 					<td class="c">
-						<ruby data-ruby={Ar}>{Ao}<rt>{Ar}</rt></ruby>日
+						<ruby data-ruby={result.dayCycle.ruby}>{result.dayCycle.text}<rt>{result.dayCycle.ruby}</rt></ruby>日
 					</td>
 				{:else if mode === 3}
-					<td class="c"><ruby data-ruby={Zr}>{Zo}<rt>{Zr}</rt></ruby></td>
-					<td class="c"><ruby data-ruby={Nr}>{No}<rt>{Nr}</rt></ruby></td>
-					<td class="l"><ruby>{日[0][0]}<rt>{日[0][1]}</rt></ruby></td>
-					<td class="l"><ruby>{日[1][0]}<rt>{日[1][1]}</rt></ruby></td>
-					<td class="l"><ruby>{日[2][0]}<rt>{日[2][1]}</rt></ruby></td>
-					{#if 月}
-						<td class="l"><ruby>{月[0][0]}<rt>{月[0][1]}</rt></ruby></td>
-						<td class="l"><ruby>{月[1][0]}<rt>{月[1][1]}</rt></ruby></td>
-						<td class="l"><ruby>{月[2][0]}<rt>{月[2][1]}</rt></ruby></td>
+					<td class="c"><ruby data-ruby={result.season.ruby}>{result.season.text}<rt>{result.season.ruby}</rt></ruby></td>
+					<td class="c"><ruby data-ruby={result.phase.ruby}>{result.phase.text}<rt>{result.phase.ruby}</rt></ruby></td>
+					<td class="l"><ruby>{result.sun[0].text}<rt>{result.sun[0].ruby}</rt></ruby></td>
+					<td class="l"><ruby>{result.sun[1].text}<rt>{result.sun[1].ruby}</rt></ruby></td>
+					<td class="l"><ruby>{result.sun[2].text}<rt>{result.sun[2].ruby}</rt></ruby></td>
+					{#if result.moon}
+						<td class="l"><ruby>{result.moon[0].text}<rt>{result.moon[0].ruby}</rt></ruby></td>
+						<td class="l"><ruby>{result.moon[1].text}<rt>{result.moon[1].ruby}</rt></ruby></td>
+						<td class="l"><ruby>{result.moon[2].text}<rt>{result.moon[2].ruby}</rt></ruby></td>
 					{:else}
 						<td class="l" colspan="3"></td>
 					{/if}
