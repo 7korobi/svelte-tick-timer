@@ -7,23 +7,25 @@
 	import * as fancyDate from 'fancy-date';
 	const { Calendar, Tempo, hasLunarEvents } = fancyDate;
 
-	const calendars: [string, FancyDate, string, string][] = [
-		['グレゴリオ暦(UTC)', Calendar.UTC, 'Gyyyy/MM/dd', 'HH:mm'],
-		['現地グレゴリオ暦', Calendar.LocalGregorian, 'Gyyyy/MM/dd', 'HH:mm'],
-		['グレゴリオ暦（天文高精度）', Calendar.GregorianAstronomical, 'Gyyyy/MM/dd', 'HH:mm'],
-		['定気法 太陽太陰暦（地球、月）', Calendar.定気法, 'Gyy年Modd日', 'Homo'],
-		['平気法 太陽太陰暦（地球、月）', Calendar.平気法, 'Gyy年Modd日', 'Homo'],
-		['フランス革命暦', Calendar.フランス革命暦, 'Gyyy年Modd日', 'HH:mm'],
-		['ユリウス暦', Calendar.Julian, 'Gyyyy/Mo/dd', 'HH:mm'],
-		['ロムルス暦', Calendar.Romulus, 'Gyyyy/Mo/dd', 'HH:mm'],
-		['アマンタ', Calendar.アマンタ, 'Gyyyy/MM/dd', 'HH:mm'],
-		['プールニマンタ', Calendar.プールニマンタ, 'Gyyyy/MM/dd', 'HH:mm'],
-		['Maya', Calendar.Maya, 'Gyyyy/MM/dd', 'HH:mm'],
-		['Beat', Calendar.Beat, 'Gyyyy/MM/dd', 'HH:mm'],
-		['エジプト民用暦', Calendar.エジプト民用暦, 'Gyyyy/MM/dd', 'HH:mm'],
-		['コプト暦', Calendar.コプト暦, 'Gyyyy/MM/dd', 'HH:mm'],
-		['太陽太陰暦（木星、カリスト）', Calendar.Jupiter, 'Gyyyy/MM/dd', 'HH:mm'],
-		['太陽暦（火星）', Calendar.MarsGregorian, 'Gyyyy/MM/dd', 'HH:mm']
+	const calendars: [string, FancyDate, string][] = [
+		['グレゴリオ暦(UTC)', Calendar.UTC, 'HH:mm'],
+		['現地グレゴリオ暦', Calendar.LocalGregorian, 'HH:mm'],
+		['グレゴリオ暦（天文高精度）', Calendar.GregorianAstronomical, 'HH:mm'],
+		['定気法 太陽太陰暦（地球、月）', Calendar.定気法, 'Homo'],
+		['平気法 太陽太陰暦（地球、月）', Calendar.平気法, 'Homo'],
+		['フランス革命暦', Calendar.フランス革命暦, 'HH:mm'],
+		['ユリウス暦', Calendar.Julian, 'Ho mo'],
+		['ロムルス暦', Calendar.Romulus, 'Ho mo'],
+		['アマンタ', Calendar.アマンタ, 'HH:mm'],
+		['プールニマンタ', Calendar.プールニマンタ, 'HH:mm'],
+		['アマンタ tithi', Calendar.アマンタティティ, 'HH:mm'],
+		['プールニマンタ tithi', Calendar.プールニマンタティティ, 'HH:mm'],
+		['Maya', Calendar.Maya, 'HH:mm'],
+		['Beat', Calendar.Beat, 'HH:mm'],
+		['エジプト民用暦', Calendar.エジプト民用暦, 'HH:mm'],
+		['コプト暦', Calendar.コプト暦, 'HH:mm'],
+		['太陽太陰暦（木星、カリスト）', Calendar.Jupiter, 'HH:mm'],
+		['太陽暦（火星）', Calendar.MarsGregorian, 'HH:mm']
 	];
 
 	type RichText = { text: string; ruby: string };
@@ -77,14 +79,13 @@
 	}
 	const results = $derived.by(() =>
 		calendars.map((data) => {
-			const [label, c, date_f, time_f] = data;
+			const [label, c, time_f] = data;
 			const solor = c.solor(show_at);
 			const moon = hasLunarEvents(c.dic.moony) ? c.lunar(show_at) : undefined;
 			return {
 				label,
-				date: plain(c, show_at, date_f),
+				standard: rich(c, show_at, c.dic.format),
 				weekday: rich(c, show_at, 'E'),
-				time: rich(c, show_at, time_f),
 				yearCycle: rich(c, show_at, 'yCo'),
 				dayCycle: rich(c, show_at, 'dCo'),
 				season: rich(c, show_at, 'Zo'),
@@ -204,8 +205,7 @@
 			<tr>
 				<th></th>
 				<th>暦</th>
-				<th colspan="2">日</th>
-				<th>時</th>
+				<th>標準表記</th>
 				<th colspan="2">干支</th>
 			</tr>
 		{:else if mode === 3}
@@ -234,13 +234,7 @@
 					<td class="l"><span>{result.span}</span></td>
 				{:else if mode === 2}
 					<td class="l">
-						<span>{result.date}</span>
-					</td>
-					<td class="c">
-						<ruby data-ruby={result.weekday.ruby}>{result.weekday.text}<rt>{result.weekday.ruby}</rt></ruby>
-					</td>
-					<td class="c">
-						<ruby data-ruby={result.time.ruby}>{result.time.text}<rt>{result.time.ruby}</rt></ruby>
+						<ruby data-ruby={result.standard.ruby}>{result.standard.text}<rt>{result.standard.ruby}</rt></ruby>
 					</td>
 					<td class="c">
 						<ruby data-ruby={result.yearCycle.ruby}>{result.yearCycle.text}<rt>{result.yearCycle.ruby}</rt></ruby>年
