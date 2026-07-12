@@ -4,7 +4,7 @@
     "": {
       "name": "svelte-tick-timer",
       "dependencies": {
-        "fancy-date": "^0.5.1",
+        "fancy-date": "^0.7.0",
         "tslib": "^2.8.1",
       },
       "devDependencies": {
@@ -336,7 +336,7 @@
 
     "esrap": ["esrap@2.2.13", "", { "dependencies": { "@jridgewell/sourcemap-codec": "^1.4.15" }, "peerDependencies": { "@typescript-eslint/types": "^8.2.0" }, "optionalPeers": ["@typescript-eslint/types"] }, "sha512-m8jH5hZgJE2RRUK/jjkGPcJEDAV+dYnZYFkosQaPTcE+Yw4xynXHOo6FUdwaWBtdR3b1MMa7wEDTSHeR2VWsGA=="],
 
-    "fancy-date": ["fancy-date@0.5.1", "", { "dependencies": { "tslib": "^2.8.1" } }, "sha512-3IDyeeGEvgS7Aid2ZLQYJqW0y0dn6SjvxaVqoDQabn8NUMIwa46a8otACe25dsIiBgZxX3svZj7myPBq5uxodg=="],
+    "fancy-date": ["fancy-date@0.7.0", "", { "dependencies": { "tslib": "^2.8.1" } }, "sha512-ga2aK5VinSt3yUEv9NSyz8nOEMgG+mp296cJU7ORtO32u6r3acSQp5IBstB50jLyxYfWItq6UiUl8zjCns8EZA=="],
 
     "fdir": ["fdir@6.5.0", "", { "peerDependencies": { "picomatch": "^3 || ^4" }, "optionalPeers": ["picomatch"] }, "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="],
 

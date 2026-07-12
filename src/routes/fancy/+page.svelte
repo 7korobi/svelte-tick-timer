@@ -28,24 +28,11 @@
 		['太陽暦（火星）', Calendar.MarsGregorian, 'HH:mm']
 	];
 
-	type RichText = { text: string; ruby: string };
-
-	function parts_text(parts: FormatPart[]): string {
-		return parts.map((part) => part.text).join('');
-	}
-
-	function parts_ruby(parts: FormatPart[]): string {
-		return parts.map((part) => part.ruby ?? '').join('');
-	}
+	type RichText = { parts: FormatPart[] };
 
 	function rich(c: FancyDate, utc: number, fmt: string): RichText {
-		if (!Number.isFinite(utc)) return { text: '', ruby: '' };
-		const parts = c.format_parts(utc, fmt);
-		return { text: parts_text(parts), ruby: parts_ruby(parts) };
-	}
-
-	function plain(c: FancyDate, utc: number, fmt: string): string {
-		return rich(c, utc, fmt).text;
+		if (!Number.isFinite(utc)) return { parts: [] };
+		return { parts: c.format_parts(utc, fmt) };
 	}
 
 	// C: この暦を使ったどの表現を見るかのモード。
@@ -148,6 +135,16 @@
 	}
 </script>
 
+{#snippet richText(value: RichText)}
+	{#each value.parts as part}
+		{#if part.ruby}
+			<ruby data-ruby={part.ruby}>{part.text}<rt>{part.ruby}</rt></ruby>
+		{:else}
+			{part.text}
+		{/if}
+	{/each}
+{/snippet}
+
 <div class="controls">
 	<button onclick={() => reset()}>reset</button>
 	<span class="form">
@@ -234,24 +231,24 @@
 					<td class="l"><span>{result.span}</span></td>
 				{:else if mode === 2}
 					<td class="l">
-						<ruby data-ruby={result.standard.ruby}>{result.standard.text}<rt>{result.standard.ruby}</rt></ruby>
+						{@render richText(result.standard)}
 					</td>
 					<td class="c">
-						<ruby data-ruby={result.yearCycle.ruby}>{result.yearCycle.text}<rt>{result.yearCycle.ruby}</rt></ruby>年
+						{@render richText(result.yearCycle)}年
 					</td>
 					<td class="c">
-						<ruby data-ruby={result.dayCycle.ruby}>{result.dayCycle.text}<rt>{result.dayCycle.ruby}</rt></ruby>日
+						{@render richText(result.dayCycle)}日
 					</td>
 				{:else if mode === 3}
-					<td class="c"><ruby data-ruby={result.season.ruby}>{result.season.text}<rt>{result.season.ruby}</rt></ruby></td>
-					<td class="c"><ruby data-ruby={result.phase.ruby}>{result.phase.text}<rt>{result.phase.ruby}</rt></ruby></td>
-					<td class="l"><ruby>{result.sun[0].text}<rt>{result.sun[0].ruby}</rt></ruby></td>
-					<td class="l"><ruby>{result.sun[1].text}<rt>{result.sun[1].ruby}</rt></ruby></td>
-					<td class="l"><ruby>{result.sun[2].text}<rt>{result.sun[2].ruby}</rt></ruby></td>
+					<td class="c">{@render richText(result.season)}</td>
+					<td class="c">{@render richText(result.phase)}</td>
+					<td class="l">{@render richText(result.sun[0])}</td>
+					<td class="l">{@render richText(result.sun[1])}</td>
+					<td class="l">{@render richText(result.sun[2])}</td>
 					{#if result.moon}
-						<td class="l"><ruby>{result.moon[0].text}<rt>{result.moon[0].ruby}</rt></ruby></td>
-						<td class="l"><ruby>{result.moon[1].text}<rt>{result.moon[1].ruby}</rt></ruby></td>
-						<td class="l"><ruby>{result.moon[2].text}<rt>{result.moon[2].ruby}</rt></ruby></td>
+						<td class="l">{@render richText(result.moon[0])}</td>
+						<td class="l">{@render richText(result.moon[1])}</td>
+						<td class="l">{@render richText(result.moon[2])}</td>
 					{:else}
 						<td class="l" colspan="3"></td>
 					{/if}
