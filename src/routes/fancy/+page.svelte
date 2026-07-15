@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { FancyDate, FormatPart } from 'fancy-date';
+	import type { FancyDate, FormatPart, RichText as FancyRichText } from 'fancy-date';
 	// tslib の __exportStar 経由の再エクスポートは Cloudflare Workers の
 	// バンドラが named export として静的検出できず undefined になるため、
 	// namespace import で実行時の実体を丸ごと受け取る(routes/+page.svelte の
@@ -20,6 +20,7 @@
 		['アマンタ', Calendar.アマンタ, 'HH:mm'],
 		['プールニマンタ', Calendar.プールニマンタ, 'HH:mm'],
 		['タイ太陰太陽暦', Calendar.タイ太陰太陽暦, 'HH:mm'],
+		['タイ太陰太陽暦（天文近似）', Calendar.タイ太陰太陽暦天文, 'HH:mm'],
 		['アマンタ tithi', Calendar.アマンタティティ, 'HH:mm'],
 		['プールニマンタ tithi', Calendar.プールニマンタティティ, 'HH:mm'],
 		['Maya', Calendar.Maya, 'HH:mm'],
@@ -32,7 +33,7 @@
 
 	];
 
-	type RichText = { parts: FormatPart[] };
+	type RichText = { parts: FancyRichText<FormatPart> };
 
 	function rich(c: FancyDate, utc: number, fmt: string): RichText {
 		if (!Number.isFinite(utc)) return { parts: [] };
