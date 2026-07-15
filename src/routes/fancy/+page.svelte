@@ -111,22 +111,16 @@
 	};
 
 	function cells_between(c: FancyDate, start: number, end: number, token: 'd' | 'H' | 'M') {
-		const list: CalendarCell[] = [];
-		let cursor = start;
-		while (cursor < end && list.length < 400) {
-			const tempos = c.to_tempos(cursor);
-			const tempo = tempos[token];
-			const at = Math.max(cursor, tempo.last_at);
-			list.push({
+		return c.periods([start, end], { step: token, limit: 400 }).map((tempo) => {
+			const at = tempo.last_at;
+			return {
 				at,
 				primary: rich(c, at, token === 'H' ? 'HH:mm' : token === 'M' ? 'Mo' : 'do'),
 				secondary: rich(c, at, token === 'M' ? 'y年' : token === 'H' ? 'm分' : 'E'),
 				current: tempo.is_cover(current_at),
 				selected: tempo.is_cover(show_at)
-			});
-			cursor = Math.max(tempo.next_at, cursor + 1);
-		}
-		return list;
+			};
+		});
 	}
 
 	const calendarCells = $derived.by(() => {
